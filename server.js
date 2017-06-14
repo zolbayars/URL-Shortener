@@ -10,18 +10,7 @@ var MongoClient = mongodb.MongoClient;
 
 var url = 'mongodb://localhost:27017/microservice';      
 
-MongoClient.connect(url, function (err, db) {
-  if (err) {
-    console.log('Unable to connect to the mongoDB server. Error:', err);
-  } else {
-    console.log('Connection established to', url);
 
-    // do some work here with the database.
-
-    //Close connection
-    db.close();
-  }
-});
 
 // we've started you off with Express, 
 // but feel free to use whatever libs or frameworks you'd like through `package.json`.
@@ -32,6 +21,27 @@ app.use(express.static('public'));
 // http://expressjs.com/en/starter/basic-routing.html
 app.get("/", function (request, response) {
   response.sendFile(__dirname + '/views/index.html');
+});
+
+app.get("/url/:longURL", function (request, response) {
+  
+  var url = request.params.longURL;
+  var urlPattern = new RegExp("(http|ftp|https)://[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:/~+#-]*[\w@?^=%&amp;/~+#-])?")
+  url.match(urlPattern); 
+  
+  MongoClient.connect(url, function (err, db) {
+    if (err) {
+      console.log('Unable to connect to the mongoDB server. Error:', err);
+    } else {
+      console.log('Connection established to', url);
+
+      // do some work here with the database.
+
+      //Close connection
+      db.close();
+    }
+  });
+  response.send(dreams);
 });
 
 app.get("/dreams", function (request, response) {
