@@ -6,9 +6,7 @@ var express = require('express');
 var app = express();
 var mongodb = require('mongodb');
 
-var MongoClient = mongodb.MongoClient;
-
-var url = 'mongodb://localhost:27017/microservice';      
+  
 
 
 
@@ -26,8 +24,17 @@ app.get("/", function (request, response) {
 app.get("/url/:longURL", function (request, response) {
   
   var url = request.params.longURL;
+  console.log(url);
   var urlPattern = new RegExp("(http|ftp|https)://[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:/~+#-]*[\w@?^=%&amp;/~+#-])?")
-  url.match(urlPattern); 
+  
+  console.log(url.match(urlPattern)); 
+  if(url.match(urlPattern)){
+    
+  } 
+  
+  var MongoClient = mongodb.MongoClient;
+
+  var url = 'mongodb://localhost:27017/microservice';    
   
   MongoClient.connect(url, function (err, db) {
     if (err) {
