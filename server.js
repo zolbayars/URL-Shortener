@@ -21,15 +21,15 @@ app.get("/", function (request, response) {
   response.sendFile(__dirname + '/views/index.html');
 });
 
-app.get("/url/:longURL", function (request, response) {
+app.get("/url", function (request, response) {
   
-  var url = request.params.longURL;
+  var url = request.query.url;
   console.log(url);
   var urlPattern = new RegExp("(http|ftp|https)://[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:/~+#-]*[\w@?^=%&amp;/~+#-])?")
   
-  console.log(url.match(urlPattern)); 
+   
   if(url.match(urlPattern)){
-    
+    console.log("Pattern matched");
   } 
   
   var MongoClient = mongodb.MongoClient;
@@ -43,7 +43,11 @@ app.get("/url/:longURL", function (request, response) {
       console.log('Connection established to', url);
 
       // do some work here with the database.
-
+      
+      var newURL = {
+        url: url
+      }
+      db.products.insert( { item: "box", qty: 20 } )
       //Close connection
       db.close();
     }
