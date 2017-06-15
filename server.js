@@ -58,7 +58,9 @@ app.get("/url", function (request, response) {
             url: url,
             createdAt: new Date(), 
           }
-          collection.insert(newURL); 
+          collection.insert(newURL, function(err,docsInserted){
+              console.log(docsInserted);
+          }); 
           //Close connection
           db.close();
         }else{
