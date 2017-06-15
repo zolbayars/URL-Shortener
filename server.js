@@ -41,15 +41,22 @@ app.get("/url", function (request, response) {
       console.log('Unable to connect to the mongoDB server. Error:', err);
     } else {
       console.log('Connection established to', url);
-
-      // do some work here with the database.
+      
+      db.collection("urls", function(error, collection){
+        // do some work here with the database.
+      var lastId = db.microservice.find({}, {_id: 1}).sort({_id:-1}).limit(1);
+      console.log(lastId);
       
       var newURL = {
-        url: url
+        url: url,
+        createdAt: new Date(), 
       }
-      db.products.insert( { item: "box", qty: 20 } )
+      db.microservice.insert(newURL); 
       //Close connection
       db.close();
+      });
+
+      
     }
   });
   response.send(dreams);
