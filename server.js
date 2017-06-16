@@ -48,6 +48,8 @@ app.get("/url", function (request, response) {
           // do some work here with the database.
           var lastId = collection.find({}, {_id: 1}).sort({_id:-1}).limit(1);
           
+          console.log("last id: ");
+          console.log(lastId);
           var id = 0;
           if(lastId._id){
             id = lastId._id; 
@@ -59,7 +61,7 @@ app.get("/url", function (request, response) {
             createdAt: new Date(), 
           }
           collection.insert(newURL, function(err,docsInserted){
-              console.log(docsInserted);
+              console.log(docsInserted.getInsertedIds());
           }); 
           //Close connection
           db.close();
