@@ -46,14 +46,14 @@ app.get("/url", function (request, response) {
         
         if(!error){
           // do some work here with the database.
-          var lastId = collection.find({}, {_id: 1}).sort({_id:-1}).limit(1);
-          
-          console.log("last id: ");
-          console.log(lastId);
-          var id = 0;
-          if(lastId._id){
-            id = lastId._id; 
-          }
+          collection.find().toArray(function (err, value) { 
+             console.log(value); 
+          });
+
+          var id = 90;
+          // if(lastId._id){
+          //   id = lastId._id; 
+          // }
 
           var newURL = {
             _id: id, 
