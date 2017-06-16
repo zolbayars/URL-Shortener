@@ -23,18 +23,18 @@ app.get("/", function (request, response) {
 
 app.get("/url", function (request, response) {
   
-  var url = request.query.url;
-  console.log(url);
+  var origURL = request.query.url;
+  console.log(origURL);
   var urlPattern = new RegExp("(http|ftp|https)://[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:/~+#-]*[\w@?^=%&amp;/~+#-])?")
   
    
-  if(url.match(urlPattern)){
+  if(origURL.match(urlPattern)){
     console.log("Pattern matched");
   } 
   
   var MongoClient = mongodb.MongoClient;
 
-  var url = 'mongodb://localhost:27017/microservice';    
+  var url = 'mongodb://localhost:27017/microservice3';    
   
   MongoClient.connect(url, function (err, db) {
     if (err) {
@@ -46,25 +46,34 @@ app.get("/url", function (request, response) {
         
         if(!error){
           // do some work here with the database.
-          collection.find().toArray(function (err, value) { 
-             console.log(value); 
+          collection.find({}, {_id: 1}).toArray(function (err, value) { 
+            console.log(value);
+            var lastId = value[value.length - 1]; 
+            var id = 0; 
+            if(lastId){
+              id = lastId + 1; 
+            }
+            
+            console.log("lastId");
+            console.log(lastId);
+            var newURL = {
+              _id: id, 
+              url: origURL,
+              createdAt: new Date(), 
+            }
+            collection.insert(newURL, function(err,docsInserted){
+              if(!err){
+                console.log(docsInserted.insertedIds[0]["_id"]);
+              }else{
+                console.log(err);
+              }
+            }); 
+            //Close connection
+            db.close();
+            
           });
 
-          var id = 90;
-          // if(lastId._id){
-          //   id = lastId._id; 
-          // }
-
-          var newURL = {
-            _id: id, 
-            url: url,
-            createdAt: new Date(), 
-          }
-          collection.insert(newURL, function(err,docsInserted){
-              console.log(docsInserted.getInsertedIds());
-          }); 
-          //Close connection
-          db.close();
+          
         }else{
           console.log(error);
         }
