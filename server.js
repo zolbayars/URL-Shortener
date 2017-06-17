@@ -34,7 +34,7 @@ app.get("/url", function (request, response) {
   
   var MongoClient = mongodb.MongoClient;
 
-  var url = 'mongodb://localhost:27017/microservice3';    
+  var url = 'mongodb://localhost:27017/microservice4';    
   
   MongoClient.connect(url, function (err, db) {
     if (err) {
@@ -50,12 +50,16 @@ app.get("/url", function (request, response) {
             console.log(value);
             var lastId = value[value.length - 1]; 
             var id = 0; 
-            if(lastId){
-              id = lastId + 1; 
+            if(lastId != undefined){
+              id = lastId._id + 1; 
             }
             
-            console.log("lastId");
+            console.log("lastId: ");
             console.log(lastId);
+            
+            console.log("id: ");
+            console.log(id);
+            
             var newURL = {
               _id: id, 
               url: origURL,
@@ -63,13 +67,21 @@ app.get("/url", function (request, response) {
             }
             collection.insert(newURL, function(err,docsInserted){
               if(!err){
-                console.log(docsInserted.insertedIds[0]["_id"]);
+                var insertedId = docsInserted.insertedIds;
+                var result = {
+                  original_url: origURL,
+                  short_url: "https://lavender-drum.glitch.me/to/"+insertedId
+                }
+                
+                response.send(result);
               }else{
                 console.log(err);
               }
+              
+                //Close connection
+              db.close();
             }); 
-            //Close connection
-            db.close();
+            
             
           });
 
