@@ -53,8 +53,9 @@ app.get("/to/:id", function (request, response){
   
   connectToMongo(function(callbackResponse){
     if(!callbackResponse.error){
+      console.log(request.params.id);
       getURL(callbackResponse.collection, request.params.id, function(resultObj){
-        response.send(resultObj);
+        response.redirect(resultObj);
       });
     }else{
       response.send(callbackResponse);
@@ -80,10 +81,10 @@ var dreams = [
 ];
 
 function getURL(collection, id, callback){
-  collection.find({_id: id}, {url: 1}).toArray(function(err, value){
+  collection.find({_id: +id}, {_id: 0, url: 1}).toArray(function(err, value){
     if(!err){
       console.log(value);
-      callback(value);
+      callback(value[0].url);
     }else{
       callback({error: "Could not get the url. Try again later."}); 
     }
