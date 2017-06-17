@@ -69,15 +69,24 @@ app.get("/dreams", function (request, response) {
 
 // could also use the POST body instead of query string: http://expressjs.com/en/api.html#req.body
 app.post("/dreams", function (request, response) {
-  dreams.push(request.query.dream);
+  
+  connectToMongo(function(callbackResponse){
+    if(!callbackResponse.error){
+      saveURL(callbackResponse.collection, request.query.dream, function(resultObj){
+      });
+    }else{
+      response.send(callbackResponse);
+    }
+  });
+  
   response.sendStatus(200);
 });
 
 // Simple in-memory store for now
 var dreams = [
-  "Find and count some sheep",
-  "Climb a really tall mountain",
-  "Wash the dishes"
+  // "Find and count some sheep",
+  // "Climb a really tall mountain",
+  // "Wash the dishes"
 ];
 
 function getURL(collection, id, callback){
@@ -117,9 +126,11 @@ function saveURL(collection, origURL, callback){
 
       if(!err){
         var insertedId = docsInserted.insertedIds;
+        var shortURL = "https://lavender-drum.glitch.me/to/"+insertedId;
+        dreams.push(shortURL);
         result = {
           original_url: origURL,
-          short_url: "https://lavender-drum.glitch.me/to/"+insertedId
+          short_url: shortURL
         }
         callback(result);
       }else{
