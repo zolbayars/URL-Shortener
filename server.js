@@ -36,8 +36,9 @@ app.get("/url", function (request, response) {
     error: "Wrong URL format or some error just happened", 
   }
   
-    
-  
+  var dbInfo = connectToMongo();
+  result = saveURL(dbInfo.collection, origURL);
+  response.send(result);
   
 });
 
@@ -102,19 +103,20 @@ function saveURL(collection, origURL){
       });
 }
 
-function connectToMongo(callback){
+function connectToMongo(callback, origURL){
   var MongoClient = mongodb.MongoClient;
   var url = 'mongodb://localhost:27017/microservice4';  
   
   MongoClient.connect(url, function (err, db) {
     if (err) {
       console.log('Unable to connect to the mongoDB server. Error:', err);
+      return { error: "Unable to connect to the mongoDB server" }
     } else {
       console.log('Connection established to', url);
       
       db.collection("urls", function(error, collection){
         if(!error){
-          return callback(); 
+          return {db: db, collection: collection};  
         }else{
           return { error: "Could not connect to DB!" }
         }
