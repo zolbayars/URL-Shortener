@@ -36,14 +36,30 @@ app.get("/url", function (request, response) {
     error: "Wrong URL format or some error just happened", 
   }
   
-  var dbInfo = connectToMongo();
-  result = saveURL(dbInfo.collection, origURL);
-  response.send(result);
+  connectToMongo(function(callbackResponse){
+    if(!callbackResponse.error){
+      saveURL(callbackResponse.collection, origURL, function(resultObj){
+        response.send(resultObj);
+      });
+    }else{
+      response.send(callbackResponse);
+    }
+  });
+  
   
 });
 
 app.get("/to/:id", function (request, response){
   
+  connectToMongo(function(callbackResponse){
+    if(!callbackResponse.error){
+      getURL(callbackResponse.collection, request.params.id, function(resultObj){
+        response.send(resultObj);
+      });
+    }else{
+      response.send(callbackResponse);
+    }
+  });
 });
 
 app.get("/dreams", function (request, response) {
@@ -63,62 +79,72 @@ var dreams = [
   "Wash the dishes"
 ];
 
-function saveURL(collection, origURL){
-  
-      // do some work here with the database.
-      collection.find({}, {_id: 1}).toArray(function (err, value) { 
-        
-        var lastId = value[value.length - 1]; 
-        var id = 0; 
-        
-        if(lastId != undefined){
-          id = lastId._id + 1; 
-        }
-
-        var newURL = {
-          _id: id, 
-          url: origURL,
-          createdAt: new Date(), 
-        }
-        
-        collection.insert(newURL, function(err,docsInserted){
-          
-          var result = {
-            error: "Could not insert you URL",
-          }
-          
-          if(!err){
-            var insertedId = docsInserted.insertedIds;
-            result = {
-              original_url: origURL,
-              short_url: "https://lavender-drum.glitch.me/to/"+insertedId
-            }
-
-            return result; 
-          }else{
-            return result; 
-          }
-
-        }); 
-      });
+function getURL(collection, id, callback){
+  collection.find({_id: id}, {url: 1}).toArray(function(err, value){
+    if(!err){
+      console.log(value);
+      callback(value);
+    }else{
+      callback({error: "Could not get the url. Try again later."}); 
+    }
+  });
 }
 
-function connectToMongo(callback, origURL){
+function saveURL(collection, origURL, callback){
+  
+  // do some work here with the database.
+  collection.find({}, {_id: 1}).toArray(function (err, value) { 
+
+    var lastId = value[value.length - 1]; 
+    var id = 0; 
+
+    if(lastId != undefined){
+      id = lastId._id + 1; 
+    }
+
+    var newURL = {
+      _id: id, 
+      url: origURL,
+      createdAt: new Date(), 
+    }
+
+    collection.insert(newURL, function(err,docsInserted){
+
+      var result = {
+        error: "Could not insert you URL",
+      }
+
+      if(!err){
+        var insertedId = docsInserted.insertedIds;
+        result = {
+          original_url: origURL,
+          short_url: "https://lavender-drum.glitch.me/to/"+insertedId
+        }
+        callback(result);
+      }else{
+        callback(result);
+      }
+
+    }); 
+  });
+}
+
+function connectToMongo(callback){
   var MongoClient = mongodb.MongoClient;
   var url = 'mongodb://localhost:27017/microservice4';  
   
   MongoClient.connect(url, function (err, db) {
     if (err) {
       console.log('Unable to connect to the mongoDB server. Error:', err);
-      return { error: "Unable to connect to the mongoDB server" }
+      callback({ error: "Unable to connect to the mongoDB server" });
     } else {
       console.log('Connection established to', url);
       
       db.collection("urls", function(error, collection){
         if(!error){
-          return {db: db, collection: collection};  
+          callback({db: db, collection: collection});  
         }else{
-          return { error: "Could not connect to DB!" }
+          callback({ error: "Could not connect to DB!" });
         }
         
       });
