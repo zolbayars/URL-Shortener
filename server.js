@@ -62,53 +62,47 @@ var dreams = [
   "Wash the dishes"
 ];
 
-function saveURL(){
+function saveURL(collection, origURL){
   
       // do some work here with the database.
       collection.find({}, {_id: 1}).toArray(function (err, value) { 
-        console.log(value);
+        
         var lastId = value[value.length - 1]; 
-          var id = 0; 
-          if(lastId != undefined){
-            id = lastId._id + 1; 
+        var id = 0; 
+        
+        if(lastId != undefined){
+          id = lastId._id + 1; 
+        }
+
+        var newURL = {
+          _id: id, 
+          url: origURL,
+          createdAt: new Date(), 
+        }
+        
+        collection.insert(newURL, function(err,docsInserted){
+          
+          var result = {
+            error: "Could not insert you URL",
           }
-
-          console.log("lastId: ");
-          console.log(lastId);
-
-          console.log("id: ");
-          console.log(id);
-
-          var newURL = {
-            _id: id, 
-            url: origURL,
-            createdAt: new Date(), 
-          }
-          collection.insert(newURL, function(err,docsInserted){
-            if(!err){
-              var insertedId = docsInserted.insertedIds;
-              result = {
-                original_url: origURL,
-                short_url: "https://lavender-drum.glitch.me/to/"+insertedId
-              }
-
-              response.send(result);
-            }else{
-              console.log(err);
+          
+          if(!err){
+            var insertedId = docsInserted.insertedIds;
+            result = {
+              original_url: origURL,
+              short_url: "https://lavender-drum.glitch.me/to/"+insertedId
             }
 
-              //Close connection
-            db.close();
-          }); 
+            return result; 
+          }else{
+            return result; 
+          }
 
-
-        });
-
-          
-        
+        }); 
+      });
 }
 
-function connectToMongo(){
+function connectToMongo(callback){
   var MongoClient = mongodb.MongoClient;
   var url = 'mongodb://localhost:27017/microservice4';  
   
@@ -120,12 +114,9 @@ function connectToMongo(){
       
       db.collection("urls", function(error, collection){
         if(!error){
-          
+          return callback(); 
         }else{
-          result = {
-            error: "Could not connect to DB!"
-          }
-          response.send(result);
+          return { error: "Could not connect to DB!" }
         }
         
       });
